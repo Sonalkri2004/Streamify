@@ -18,6 +18,10 @@
     font-size: 14px;
     color: #5a5a5a;
 }
+.play-video-info img{
+    width: 20px;
+    margin-right: 8px;
+}
 .play-video-info span{
     display: inline-flex;
     align-items: center;
