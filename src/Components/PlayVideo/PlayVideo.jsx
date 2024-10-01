@@ -10,7 +10,10 @@ import jack from "../../assets/jack.png";
 import user_profile from "../../assets/user_profile.jpg";
 import { API_KEY, value_convertor } from "../../data";
 import moment from "moment";
-const PlayVideo = ({ videoId }) => {
+import { useParams } from "react-router-dom";
+const PlayVideo = () => {
+
+  const {videoId}=useParams();
   const [apiData, setApiData] = useState(null);
   const [channelData, setChannelData] = useState(null);
   const [commentData, setCommentData] = useState([]);
@@ -37,7 +40,7 @@ const PlayVideo = ({ videoId }) => {
 
   useEffect(() => {
     fetchVideoData();
-  }, []);
+  }, [videoId]);
 
   useEffect(() => {
     fetchOtherData();
