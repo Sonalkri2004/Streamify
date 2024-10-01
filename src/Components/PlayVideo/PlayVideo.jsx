@@ -9,41 +9,60 @@ import save from "../../assets/save.png";
 import jack from "../../assets/jack.png";
 import user_profile from "../../assets/user_profile.jpg";
 import { API_KEY, value_convertor } from "../../data";
-import moment from 'moment'
-const PlayVideo = ({videoId}) => {
+import moment from "moment";
+const PlayVideo = ({ videoId }) => {
+  const [apiData, setApiData] = useState(null);
+  const [channelData,setChannelData] =useState(null);
+  const [commentData,setCommentData] =useState([]);
 
-  const [apiData,setApiData] =useState(null);
-
-  const fetchVideoData =async ()=>{
+  const fetchVideoData = async () => {
     // Fetching videos data
     const videoDetails_url = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${videoId}&key=${API_KEY}`;
-    await fetch(videoDetails_url).then(res=>res.json()).then(data => setApiData(data.items[0]))
+    await fetch(videoDetails_url)
+      .then((res) => res.json())
+      .then((data) => setApiData(data.items[0]));
+  };
+
+  const fetchOtherData =async ()=>{
+    const channelData_url =`https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=${apiData.snippet.channelId}&key=${API_KEY}`;
+    await fetch(channelData_url).then((res)=>res.json()).then((data)=>setChannelData(data.items[0]));
+
+    const comment_url =`https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet%2CcontentDetails%2Cstatistics&id=${videoId}&key=${API_KEY}`;
+    await fetch(comment_url).then((res)=>res.json()).then((data)=>setCommentData(data.items));
   }
-  useEffect(()=>{
+
+  useEffect(() => {
     fetchVideoData();
-  },[])
+  }, []);
+
+  useEffect(()=>{
+     fetchOtherData();
+  },[apiData])
 
   return (
     <div className="play-video">
       {/* <video src={video1} controls autoPlay muted></video> */}
       <iframe
-        
         src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerpolicy="strict-origin-when-cross-origin"
         allowfullscreen
       ></iframe>
-      <h3>{apiData?apiData.snippet.title:"Title Here"}</h3>
+      <h3>{apiData ? apiData.snippet.title : "Title Here"}</h3>
       <div className="play-video-info">
-        <p>{apiData?value_convertor(apiData.statistics.viewCount):"16K"} Views &bull; {apiData?moment(apiData.snippet.publishedAt).fromNow():""} </p>
+        <p>
+          {apiData ? value_convertor(apiData.statistics.viewCount) : "16K"}{" "}
+          Views &bull;{" "}
+          {apiData ? moment(apiData.snippet.publishedAt).fromNow() : ""}{" "}
+        </p>
         <div>
           <span>
             <img src={like} alt="" />
-            125
+            {apiData?value_convertor(apiData.statistics.likeCount):155}
           </span>
           <span>
-            <img src={dislike} alt="" />1
+            <img src={dislike} alt="" />
           </span>
           <span>
             <img src={share} alt="" />
@@ -57,18 +76,17 @@ const PlayVideo = ({videoId}) => {
       </div>
       <hr />
       <div className="publisher">
-        <img src={jack} alt="" />
+        <img src={channelData?channelData.snippet.thumbnails.default.url:""} alt="" />
         <div>
-          <p>GretaStack</p>
-          <span>1m subscribers</span>
+          <p>{apiData?apiData.snippet.channelTitle:""}</p>
+          <span>{channelData?value_convertor(channelData.statistics.subscriberCount):"1M"}subscribers</span>
         </div>
         <button>Subscribe</button>
       </div>
       <div className="vid-description">
-        <p>Channel that makes learning easy</p>
-        <p>Subscribe GreatStack to watch more content.</p>
+        <p>{apiData?apiData.snippet.description.slice(0,250):"Description here"}</p>
         <hr />
-        <h4>130 comments</h4>
+        <h4>{apiData?value_convertor(apiData.statistics.commentCount):103}comments</h4>
         <div className="comment">
           <img src={user_profile} alt="" />
           <div>
@@ -88,63 +106,7 @@ const PlayVideo = ({videoId}) => {
             </div>
           </div>
         </div>
-        <div className="comment">
-          <img src={user_profile} alt="" />
-          <div>
-            <h3>
-              Jack Nicholson <span>1 day ago</span>
-            </h3>
-
-            <p>
-              A global computer network providing a variety of information and
-              interconnected networks using standardized communication
-              protocols.
-            </p>
-            <div className="comment-action">
-              <img src={like} alt="" />
-              <span>244</span>
-              <img src={dislike} alt="" />
-            </div>
-          </div>
-        </div>
-        <div className="comment">
-          <img src={user_profile} alt="" />
-          <div>
-            <h3>
-              Jack Nicholson <span>1 day ago</span>
-            </h3>
-
-            <p>
-              A global computer network providing a variety of information and
-              interconnected networks using standardized communication
-              protocols.
-            </p>
-            <div className="comment-action">
-              <img src={like} alt="" />
-              <span>244</span>
-              <img src={dislike} alt="" />
-            </div>
-          </div>
-        </div>
-        <div className="comment">
-          <img src={user_profile} alt="" />
-          <div>
-            <h3>
-              Jack Nicholson <span>1 day ago</span>
-            </h3>
-
-            <p>
-              A global computer network providing a variety of information and
-              interconnected networks using standardized communication
-              protocols.
-            </p>
-            <div className="comment-action">
-              <img src={like} alt="" />
-              <span>244</span>
-              <img src={dislike} alt="" />
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
