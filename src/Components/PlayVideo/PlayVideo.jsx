@@ -12,8 +12,8 @@ import { API_KEY, value_convertor } from "../../data";
 import moment from "moment";
 const PlayVideo = ({ videoId }) => {
   const [apiData, setApiData] = useState(null);
-  const [channelData,setChannelData] =useState(null);
-  const [commentData,setCommentData] =useState([]);
+  const [channelData, setChannelData] = useState(null);
+  const [commentData, setCommentData] = useState([]);
 
   const fetchVideoData = async () => {
     // Fetching videos data
@@ -23,21 +23,25 @@ const PlayVideo = ({ videoId }) => {
       .then((data) => setApiData(data.items[0]));
   };
 
-  const fetchOtherData =async ()=>{
-    const channelData_url =`https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=${apiData.snippet.channelId}&key=${API_KEY}`;
-    await fetch(channelData_url).then((res)=>res.json()).then((data)=>setChannelData(data.items[0]));
+  const fetchOtherData = async () => {
+    const channelData_url = `https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=${apiData.snippet.channelId}&key=${API_KEY}`;
+    await fetch(channelData_url)
+      .then((res) => res.json())
+      .then((data) => setChannelData(data.items[0]));
 
-    const comment_url =`https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet%2CcontentDetails%2Cstatistics&id=${videoId}&key=${API_KEY}`;
-    await fetch(comment_url).then((res)=>res.json()).then((data)=>setCommentData(data.items));
-  }
+    const comment_url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&maxResults=50&videoId=${videoId}&key=${API_KEY}`;
+    await fetch(comment_url)
+      .then((res) => res.json())
+      .then((data) => setCommentData(data.items));
+  };
 
   useEffect(() => {
     fetchVideoData();
   }, []);
 
-  useEffect(()=>{
-     fetchOtherData();
-  },[apiData])
+  useEffect(() => {
+    fetchOtherData();
+  }, [apiData]);
 
   return (
     <div className="play-video">
@@ -59,7 +63,7 @@ const PlayVideo = ({ videoId }) => {
         <div>
           <span>
             <img src={like} alt="" />
-            {apiData?value_convertor(apiData.statistics.likeCount):155}
+            {apiData ? value_convertor(apiData.statistics.likeCount) : 155}
           </span>
           <span>
             <img src={dislike} alt="" />
@@ -76,37 +80,56 @@ const PlayVideo = ({ videoId }) => {
       </div>
       <hr />
       <div className="publisher">
-        <img src={channelData?channelData.snippet.thumbnails.default.url:""} alt="" />
+        <img
+          src={channelData ? channelData.snippet.thumbnails.default.url : ""}
+          alt=""
+        />
         <div>
-          <p>{apiData?apiData.snippet.channelTitle:""}</p>
-          <span>{channelData?value_convertor(channelData.statistics.subscriberCount):"1M"}subscribers</span>
+          <p>{apiData ? apiData.snippet.channelTitle : ""}</p>
+          <span>
+            {channelData
+              ? value_convertor(channelData.statistics.subscriberCount)
+              : "1M"}
+            subscribers
+          </span>
         </div>
         <button>Subscribe</button>
       </div>
       <div className="vid-description">
-        <p>{apiData?apiData.snippet.description.slice(0,250):"Description here"}</p>
+        <p>
+          {apiData
+            ? apiData.snippet.description.slice(0, 250)
+            : "Description here"}
+        </p>
         <hr />
-        <h4>{apiData?value_convertor(apiData.statistics.commentCount):103}comments</h4>
-        <div className="comment">
-          <img src={user_profile} alt="" />
-          <div>
-            <h3>
-              Jack Nicholson <span>1 day ago</span>
-            </h3>
-
-            <p>
-              A global computer network providing a variety of information and
-              interconnected networks using standardized communication
-              protocols.
-            </p>
-            <div className="comment-action">
-              <img src={like} alt="" />
-              <span>244</span>
-              <img src={dislike} alt="" />
-            </div>
-          </div>
-        </div>
-        
+        <h4>
+          {apiData ? value_convertor(apiData.statistics.commentCount) : 103}
+          comments
+        </h4>
+        {commentData && commentData.length > 0 ? (
+          commentData.map((item, index) => {
+            const commentSnippet = item.snippet.topLevelComment.snippet;
+            return (
+              <div key={index} className="comment">
+                <img src={commentSnippet.authorProfileImageUrl} alt="" />
+                <div>
+                  <h3>
+                    {commentSnippet.authorDisplayName}{" "}
+                    <span>{moment(commentSnippet.publishedAt).fromNow()}</span>
+                  </h3>
+                  <p>{commentSnippet.textDisplay}</p>
+                  <div className="comment-action">
+                    <img src={like} alt="" />
+                    <span>{value_convertor(commentSnippet.likeCount)}</span>
+                    <img src={dislike} alt="" />
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p>No comments available</p>
+        )}
       </div>
     </div>
   );
