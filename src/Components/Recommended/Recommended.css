@@ -12,10 +12,12 @@
 }
 .vid-info{
     flex-basis: 49%;
+    color: rgb(213, 208, 208);
 }
 .vid-info h4{
     font-size: 13px;
     margin-bottom: 5px;
+    color: white;
 }
 @media (max-width:900px) {
     .recommended{
